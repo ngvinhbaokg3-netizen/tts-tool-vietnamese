@@ -1,0 +1,97 @@
+services:
+  # Main application
+  app:
+    build: .
+    container_name: tts_vietnamese_app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://tts_user:tts_password@db:5432/tts_vietnamese
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-here}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-here}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./voice_samples:/app/voice_samples
+      - ./logs:/app/logs
+    depends_on:
+      - db
+      - redis
+    networks:
+      - tts_network
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: tts_vietnamese_db
+    environment:
+      - POSTGRES_USER=tts_user
+      - POSTGRES_PASSWORD=tts_password
+      - POSTGRES_DB=tts_vietnamese
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - tts_network
+    restart: unless-stopped
+
+  # Redis for caching and Celery
+  redis:
+    image: redis:7-alpine
+    container_name: tts_vietnamese_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tts_network
+    restart: unless-stopped
+
+  # Celery Worker for background tasks
+  celery:
+    build: .
+    container_name: tts_vietnamese_celery
+    command: celery -A app.celery worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://tts_user:tts_password@db:5432/tts_vietnamese
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./voice_samples:/app/voice_samples
+    depends_on:
+      - db
+      - redis
+    networks:
+      - tts_network
+    restart: unless-stopped
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: tts_vietnamese_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./static:/app/static:ro
+    depends_on:
+      - app
+    networks:
+      - tts_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  tts_network:
+    driver: bridge

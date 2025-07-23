@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TTS Tool Vietnamese</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #FF9800;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2c2c2c;
+            --text-light: #e0e0e0;
+            --sidebar-bg: #242424;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-light);
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--card-bg);
+            color: var(--primary-color);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .dashboard-card {
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            margin: 10px 0;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .form-control, .form-select {
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            color: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #3c3c3c;
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+        }
+
+        .table-dark {
+            background-color: var(--card-bg);
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-light);
+            background-color: transparent;
+            border: none;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: var(--card-bg);
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .voice-profile-card {
+            background-color: #3c3c3c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .voice-profile-card.training {
+            border: 1px solid var(--secondary-color);
+        }
+
+        .voice-profile-card.ready {
+            border: 1px solid var(--primary-color);
+        }
+
+        .progress {
+            background-color: #555;
+        }
+
+        .upload-zone {
+            border: 2px dashed #555;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--secondary-color);
+            background-color: rgba(255, 152, 0, 0.1);
+        }
+
+        #audioPlayer {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .history-item {
+            background-color: #3c3c3c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="d-flex align-items-center mb-4 px-3">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <h6 class="mb-0" id="userName">User</h6>
+                        <small class="text-muted" id="userRole">Free</small>
+                    </div>
+                </div>
+                
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-page="overview">
+                        <i class="fas fa-tachometer-alt"></i> Tổng quan
+                    </a>
+                    <a class="nav-link" href="#" data-page="tts">
+                        <i class="fas fa-microphone"></i> Tạo giọng nói
+                    </a>
+                    <a class="nav-link" href="#" data-page="voices">
+                        <i class="fas fa-user-circle"></i> Giọng của tôi
+                    </a>
+                    <a class="nav-link" href="#" data-page="history">
+                        <i class="fas fa-history"></i> Lịch sử
+                    </a>
+                    <a class="nav-link" href="#" data-page="settings">
+                        <i class="fas fa-cog"></i> Cài đặt
+                    </a>
+                    <hr class="my-3">
+                    <a class="nav-link text-danger" href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Overview Page -->
+                <div id="overviewPage" class="dashboard-page">
+                    <h2 class="mb-4">Tổng quan</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <i class="fas fa-microphone fa-2x"></i>
+                                <h3 id="totalVoices">0</h3>
+                                <p>Giọng đã clone</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <i class="fas fa-file-audio fa-2x"></i>
+                                <h3 id="totalAudios">0</h3>
+                                <p>Audio đã tạo</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <i class="fas fa-clock fa-2x"></i>
+                                <h3 id="totalMinutes">0</h3>
+                                <p>Phút audio</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <i class="fas fa-calendar fa-2x"></i>
+                                <h3 id="daysActive">0</h3>
+                                <p>Ngày hoạt động</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h4>Hoạt động gần đây</h4>
+                        <div id="recentActivity">
+                            <p class="text-muted">Chưa có hoạt động nào</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TTS Page -->
+                <div id="ttsPage" class="dashboard-page" style="display: none;">
+                    <h2 class="mb-4">Tạo giọng nói</h2>
+                    
+                    <div class="dashboard-card">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Loại giọng:</label>
+                                <select class="form-select" id="voiceType">
+                                    <option value="edge_tts">Giọng hệ thống</option>
+                                    <option value="cloned">Giọng đã clone</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Chọn giọng:</label>
+                                <select class="form-select" id="voiceSelect">
+                                    <option value="vi-VN-HoaiMyNeural">HoaiMy (Nữ)</option>
+                                    <option value="vi-VN-NamMinhNeural">NamMinh (Nam)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tốc độ: <span id="speedValue">1.0</span>x</label>
+                                <input type="range" class="form-range" id="speedRange" min="0.5" max="2" step="0.1" value="1">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cao độ: <span id="pitchValue">0</span>Hz</label>
+                                <input type="range" class="form-range" id="pitchRange" min="-20" max="20" step="1" value="0">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Văn bản:</label>
+                            <textarea class="form-control" id="textInput" rows="6" placeholder="Nhập văn bản cần chuyển thành giọng nói..."></textarea>
+                            <small class="text-muted">Số ký tự: <span id="charCount">0</span></small>
+                        </div>
+
+                        <div class="text-center">
+                            <button class="btn btn-primary btn-lg" onclick="synthesize()">
+                                <i class="fas fa-play"></i> Tạo giọng nói
+                            </button>
+                        </div>
+
+                        <audio id="audioPlayer" controls style="display: none;"></audio>
+                        
+                        <div id="downloadSection" style="display: none;" class="mt-3 text-center">
+                            <button class="btn btn-success" onclick="downloadAudio()">
+                                <i class="fas fa-download"></i> Tải xuống
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voices Page -->
+                <div id="voicesPage" class="dashboard-page" style="display: none;">
+                    <h2 class="mb-4">Giọng của tôi</h2>
+                    
+                    <div class="dashboard-card">
+                        <h4>Tạo giọng mới</h4>
+                        <div class="upload-zone" id="uploadZone">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                            <p>Kéo thả file audio hoặc click để chọn</p>
+                            <p class="text-muted">Yêu cầu: 10-300 giây, định dạng WAV/MP3/OGG</p>
+                            <input type="file" id="audioFileInput" accept="audio/*" style="display: none;">
+                        </div>
+                        
+                        <div id="uploadForm" style="display: none;" class="mt-3">
+                            <div class="mb-3">
+                                <label class="form-label">Tên giọng:</label>
+                                <input type="text" class="form-control" id="voiceName" placeholder="Ví dụ: Giọng của tôi">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mô tả:</label>
+                                <textarea class="form-control" id="voiceDescription" rows="2" placeholder="Mô tả về giọng nói này..."></textarea>
+                            </div>
+                            <button class="btn btn-primary" onclick="uploadVoice()">
+                                <i class="fas fa-upload"></i> Tải lên & Huấn luyện
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card mt-4">
+                        <h4>Giọng đã lưu</h4>
+                        <div id="voicesList">
+                            <p class="text-muted">Chưa có giọng nào được lưu</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Page -->
+                <div id="historyPage" class="dashboard-page" style="display: none;">
+                    <h2 class="mb-4">Lịch sử</h2>
+                    
+                    <div class="dashboard-card">
+                        <div id="historyList">
+                            <p class="text-muted">Chưa có lịch sử nào</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settingsPage" class="dashboard-page" style="display: none;">
+                    <h2 class="mb-4">Cài đặt</h2>
+                    
+                    <div class="dashboard-card">
+                        <h4>Thông tin tài khoản</h4>
+                        <form id="profileForm">
+                            <div class="mb-3">
+                                <label class="form-label">Họ và tên:</label>
+                                <input type="text" class="form-control" id="fullName">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email:</label>
+                                <input type="email" class="form-control" id="email">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Cập nhật</button>
+                        </form>
+                    </div>
+
+                    <div class="dashboard-card mt-4">
+                        <h4>Đổi mật khẩu</h4>
+                        <form id="passwordForm">
+                            <div class="mb-3">
+                                <label class="form-label">Mật khẩu hiện tại:</label>
+                                <input type="password" class="form-control" id="currentPassword">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mật khẩu mới:</label>
+                                <input type="password" class="form-control" id="newPassword">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Xác nhận mật khẩu:</label>
+                                <input type="password" class="form-control" id="confirmPassword">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Đổi mật khẩu</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-white">Đang xử lý...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentAudioUrl = null;
+        const API_BASE = '/api';
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Set axios default header
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+            // Load user data
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                updateUserInfo();
+            }
+
+            loadProfile();
+        }
+
+        // Update user info in UI
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.full_name || currentUser.username;
+                document.getElementById('userAvatar').textContent = (currentUser.full_name || currentUser.username).charAt(0).toUpperCase();
+                document.getElementById('userRole').textContent = currentUser.role === 'admin' ? 'Admin' : 'Miễn phí';
+            }
+        }
+
+        // Load user profile
+        async function loadProfile() {
+            try {
+                const response = await axios.get(`${API_BASE}/profile`);
+                currentUser = response.data.user;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                updateUserInfo();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                if (error.response?.status === 401) {
+                    logout();
+                }
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            // Load stats
+            document.getElementById('totalVoices').textContent = currentUser.voice_profiles_count || 0;
+            document.getElementById('totalAudios').textContent = currentUser.tts_history_count || 0;
+
+            // Calculate days active
+            const createdDate = new Date(currentUser.created_at);
+            const daysActive = Math.floor((new Date() - createdDate) / (1000 * 60 * 60 * 24));
+            document.getElementById('daysActive').textContent = daysActive;
+
+            // Load recent activity
+            loadRecentActivity();
+
+            // Load voices
+            loadVoices();
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                const response = await axios.get(`${API_BASE}/tts/history?per_page=5`);
+                const activities = response.data.history;
+
+                const activityHtml = activities.map(item => `
+                    <div class="history-item">
+                        <div>
+                            <strong>${item.voice_type === 'cloned' ? 'Giọng clone' : 'Giọng hệ thống'}</strong>
+                            <br>
+                            <small class="text-muted">${item.text}</small>
+                        </div>
+                        <small>${new Date(item.created_at).toLocaleString('vi-VN')}</small>
+                    </div>
+                `).join('');
+
+                document.getElementById('recentActivity').innerHTML = activityHtml || '<p class="text-muted">Chưa có hoạt động nào</p>';
+            } catch (error) {
+                console.error('Error loading activity:', error);
+            }
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                showPage(page);
+
+                // Update active state
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        function showPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.dashboard-page').forEach(p => p.style.display = 'none');
+
+            // Show selected page
+            const pageElement = document.getElementById(page + 'Page');
+            if (pageElement) {
+                pageElement.style.display = 'block';
+
+                // Load page-specific data
+                if (page === 'history') {
+                    loadHistory();
+                } else if (page === 'voices') {
+                    loadVoices();
+                } else if (page === 'settings') {
+                    loadSettings();
+                }
+            }
+        }
+
+        // TTS Functions
+        document.getElementById('voiceType').addEventListener('change', async function() {
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+
+            if (this.value === 'edge_tts') {
+                voiceSelect.innerHTML = `
+                    <option value="vi-VN-HoaiMyNeural">HoaiMy (Nữ)</option>
+                    <option value="vi-VN-NamMinhNeural">NamMinh (Nam)</option>
+                `;
+            } else {
+                // Load cloned voices
+                try {
+                    const response = await axios.get(`${API_BASE}/voice-profiles`);
+                    const voices = response.data.profiles.filter(v => v.is_trained);
+
+                    if (voices.length === 0) {
+                        voiceSelect.innerHTML = '<option value="">Chưa có giọng clone</option>';
+                    } else {
+                        voices.forEach(voice => {
+                            voiceSelect.innerHTML += `<option value="${voice.id}">${voice.profile_name}</option>`;
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading voices:', error);
+                }
+            }
+        });
+
+        // Update range values
+        document.getElementById('speedRange').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value;
+        });
+
+        document.getElementById('pitchRange').addEventListener('input', function() {
+            document.getElementById('pitchValue').textContent = this.value;
+        });
+
+        // Character counter
+        document.getElementById('textInput').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+
+        // Synthesize
+        async function synthesize() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('Vui lòng nhập văn bản!');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await axios.post(`${API_BASE}/tts/synthesize`, {
+                    text: text,
+                    voice_type: document.getElementById('voiceType').value,
+                    voice_id: document.getElementById('voiceSelect').value,
+                    speed: parseFloat(document.getElementById('speedRange').value),
+                    pitch: parseFloat(document.getElementById('pitchRange').value)
+                });
+
+                currentAudioUrl = response.data.download_url;
+                const audioPlayer = document.getElementById('audioPlayer');
+                audioPlayer.src = currentAudioUrl;
+                audioPlayer.style.display = 'block';
+                audioPlayer.play();
+
+                document.getElementById('downloadSection').style.display = 'block';
+
+                // Reload stats
+                loadDashboardData();
+            } catch (error) {
+                alert(error.response?.data?.error || 'Lỗi khi tạo giọng nói!');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Download audio
+        function downloadAudio() {
+            if (currentAudioUrl) {
+                window.open(currentAudioUrl, '_blank');
+            }
+        }
+
+        // Voice upload
+        const uploadZone = document.getElementById('uploadZone');
+        const audioFileInput = document.getElementById('audioFileInput');
+        let selectedFile = null;
+
+        uploadZone.addEventListener('click', () => audioFileInput.click());
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            handleFileSelect(e.dataTransfer.files[0]);
+        });
+
+        audioFileInput.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files[0]);
+        });
+
+        function handleFileSelect(file) {
+            if (!file || !file.type.startsWith('audio/')) {
+                alert('Vui lòng chọn file audio!');
+                return;
+            }
+
+            selectedFile = file;
+            uploadZone.innerHTML = `
+                <i class="fas fa-file-audio fa-3x mb-3"></i>
+                <p>${file.name}</p>
+                <p class="text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+            `;
+            document.getElementById('uploadForm').style.display = 'block';
+        }
+
+        async function uploadVoice() {
+            if (!selectedFile) {
+                alert('Vui lòng chọn file audio!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('audio', selectedFile);
+            formData.append('profile_name', document.getElementById('voiceName').value || 'Giọng của tôi');
+            formData.append('description', document.getElementById('voiceDescription').value || '');
+
+            showLoading();
+
+            try {
+                const response = await axios.post(`${API_BASE}/voice-profiles`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                alert('Upload thành công! Giọng của bạn đang được huấn luyện.');
+                
+                // Reset form
+                uploadZone.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                    <p>Kéo thả file audio hoặc click để chọn</p>
+                    <p class="text-muted">Yêu cầu: 10-300 giây, định dạng WAV/MP3/OGG</p>
+                `;
+                document.getElementById('uploadForm').style.display = 'none';
+                document.getElementById('voiceName').value = '';
+                document.getElementById('voiceDescription').value = '';
+                selectedFile = null;
+
+                // Reload voices
+                loadVoices();
+            } catch (error) {
+                alert(error.response?.data?.error || 'Lỗi khi upload!');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Load voices
+        async function loadVoices() {
+            try {
+                const response = await axios.get(`${API_BASE}/voice-profiles`);
+                const voices = response.data.profiles;
+
+                if (voices.length === 0) {
+                    document.getElementById('voicesList').innerHTML = '<p class="text-muted">Chưa có giọng nào được lưu</p>';
+                    return;
+                }
+
+                const voicesHtml = voices.map(voice => `
+                    <div class="voice-profile-card ${voice.is_trained ? 'ready' : 'training'}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5>${voice.profile_name}</h5>
+                                <p class="mb-1">${voice.description || 'Không có mô tả'}</p>
+                                <small class="text-muted">
+                                    ${voice.is_trained ? 'Sẵn sàng sử dụng' : 'Đang huấn luyện...'}
+                                    | Sử dụng: ${voice.usage_count} lần
+                                </small>
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="deleteVoice(${voice.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        ${!voice.is_trained ? `
+                            <div class="progress mt-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     style="width: ${voice.training_progress}%"></div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+                document.getElementById('voicesList').innerHTML = voicesHtml;
+            } catch (error) {
+                console.error('Error loading voices:', error);
+            }
+        }
+
+        // Delete voice
+        async function deleteVoice(voiceId) {
+            if (!confirm('Bạn có chắc muốn xóa giọng này?')) {
+                return;
+            }
+
+            try {
+                await axios.delete(`${API_BASE}/voice-profiles/${voiceId}`);
+                loadVoices();
+            } catch (error) {
+                alert('Lỗi khi xóa giọng!');
+            }
+        }
+
+        // Load history
+        async function loadHistory() {
+            try {
+                const response = await axios.get(`${API_BASE}/tts/history`);
+                const history = response.data.history;
+
+                if (history.length === 0) {
+                    document.getElementById('historyList').innerHTML = '<p class="text-muted">Chưa có lịch sử nào</p>';
+                    return;
+                }
+
+                const historyHtml = history.map(item => `
+                    <div class="history-item">
+                        <div>
+                            <strong>${item.voice_type === 'cloned' ? 'Giọng clone' : 'Giọng hệ thống'}</strong>
+                            <br>
+                            <span>${item.text}</span>
+                            <br>
+                            <small class="text-muted">
+                                Thời lượng: ${item.duration ? item.duration.toFixed(1) + 's' : 'N/A'} | 
+                                Kích thước: ${(item.file_size / 1024).toFixed(1)} KB
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">${new Date(item.created_at).toLocaleString('vi-VN')}</small>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('historyList').innerHTML = historyHtml;
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        // Load settings
+        function loadSettings() {
+            if (currentUser) {
+                document.getElementById('fullName').value = currentUser.full_name || '';
+                document.getElementById('email').value = currentUser.email || '';
+            }
+        }
+
+        // Profile form
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            showLoading();
+
+            try {
+                const response = await axios.put(`${API_BASE}/profile`, {
+                    full_name: document.getElementById('fullName').value,
+                    email: document.getElementById('email').value
+                });
+
+                currentUser = response.data.user;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                updateUserInfo();
+                alert('Cập nhật thành công!');
+            } catch (error) {
+                alert(error.response?.data?.error || 'Lỗi khi cập nhật!');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Password form
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                alert('Mật khẩu xác nhận không khớp!');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                await axios.put(`${API_BASE}/profile`, {
+                    password: newPassword
+                });
+
+                alert('Đổi mật khẩu thành công!');
+                this.reset();
+            } catch (error) {
+                alert(error.response?.data?.error || 'Lỗi khi đổi mật khẩu!');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Utility functions
+        function showLoading() {
+            document.querySelector('.loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.querySelector('.loading-overlay').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // Initialize
+        checkAuth();
+
+        // Auto refresh voice training status
+        setInterval(() => {
+            if (document.getElementById('voicesPage').style.display !== 'none') {
+                loadVoices();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

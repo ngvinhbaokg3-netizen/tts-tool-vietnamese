@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TTS Tool Vietnamese</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #FF9800;
+            --danger-color: #f44336;
+            --dark-bg: #1a1a1a;
+            --card-bg: #2c2c2c;
+            --text-light: #e0e0e0;
+            --sidebar-bg: #242424;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .admin-header {
+            background-color: var(--card-bg);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-light);
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--card-bg);
+            color: var(--primary-color);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .admin-card {
+            background-color: var(--card-bg);
+            border: none;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateX(5px);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--secondary-color);
+        }
+
+        .table-dark {
+            background-color: var(--card-bg);
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+        }
+
+        .user-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-admin {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .badge-user {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .badge-active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .badge-inactive {
+            background-color: #666;
+            color: white;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            width: 300px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-light);
+        }
+
+        .form-control, .form-select {
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            color: white;
+        }
+
+        .alert-custom {
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            color: var(--text-light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .activity-log {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            background-color: #3c3c3c;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .voice-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .voice-stat-item {
+            background-color: #3c3c3c;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .voice-stat-item h4 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <div class="text-center mb-4">
+                    <h4><i class="fas fa-shield-alt"></i> Admin Panel</h4>
+                    <small>TTS Tool Vietnamese</small>
+                </div>
+                
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-section="overview">
+                        <i class="fas fa-chart-line"></i> Tổng quan
+                    </a>
+                    <a class="nav-link" href="#" data-section="users">
+                        <i class="fas fa-users"></i> Quản lý Users
+                    </a>
+                    <a class="nav-link" href="#" data-section="voices">
+                        <i class="fas fa-microphone"></i> Quản lý Voices
+                    </a>
+                    <a class="nav-link" href="#" data-section="system">
+                        <i class="fas fa-server"></i> Hệ thống
+                    </a>
+                    <a class="nav-link" href="#" data-section="logs">
+                        <i class="fas fa-history"></i> Logs
+                    </a>
+                    <hr class="my-3">
+                    <a class="nav-link" href="/dashboard">
+                        <i class="fas fa-arrow-left"></i> Về Dashboard
+                    </a>
+                    <a class="nav-link text-danger" href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10">
+                <div class="admin-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2>Bảng điều khiển Admin</h2>
+                            <p class="mb-0">Xin chào Admin! Hôm nay là <span id="currentDate"></span></p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="refreshData()">
+                                <i class="fas fa-sync"></i> Làm mới
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <div id="overviewSection" class="admin-section">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h6>Tổng Users</h6>
+                                <h3 id="totalUsers">0</h3>
+                                <small>+<span id="newUsersToday">0</span> hôm nay</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card warning">
+                                <h6>Voice Profiles</h6>
+                                <h3 id="totalVoices">0</h3>
+                                <small><span id="trainedVoices">0</span> đã train</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <h6>TTS Requests</h6>
+                                <h3 id="totalRequests">0</h3>
+                                <small><span id="todayRequests">0</span> hôm nay</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card danger">
+                                <h6>Active Users</h6>
+                                <h3 id="activeUsers">0</h3>
+                                <small><span id="activePercent">0</span>% hoạt động</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="admin-card">
+                                <h5>Thống kê 7 ngày</h5>
+                                <div class="chart-container">
+                                    <canvas id="weeklyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="admin-card">
+                                <h5>Phân bố Voice Types</h5>
+                                <div class="chart-container">
+                                    <canvas id="voiceTypeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="admin-card mt-4">
+                        <h5>Hoạt động gần đây</h5>
+                        <div class="activity-log" id="activityLog">
+                            <p class="text-muted">Đang tải...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Management Section -->
+                <div id="usersSection" class="admin-section" style="display: none;">
+                    <div class="admin-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Quản lý người dùng</h4>
+                            <div class="d-flex gap-3">
+                                <input type="text" class="search-box" placeholder="Tìm kiếm user..." id="userSearch">
+                                <button class="btn btn-success" onclick="showAddUserModal()">
+                                    <i class="fas fa-plus"></i> Thêm User
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên đăng nhập</th>
+                                        <th>Email</th>
+                                        <th>Họ tên</th>
+                                        <th>Role</th>
+                                        <th>Trạng thái</th>
+                                        <th>Voices</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center">Đang tải...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <nav>
+                            <ul class="pagination justify-content-center" id="usersPagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Voices Management Section -->
+                <div id="voicesSection" class="admin-section" style="display: none;">
+                    <div class="admin-card">
+                        <h4>Quản lý Voice Profiles</h4>
+                        
+                        <div class="voice-stats">
+                            <div class="voice-stat-item">
+                                <h4 id="totalVoiceProfiles">0</h4>
+                                <p>Tổng số voices</p>
+                            </div>
+                            <div class="voice-stat-item">
+                                <h4 id="publicVoices">0</h4>
+                                <p>Voices công khai</p>
+                            </div>
+                            <div class="voice-stat-item">
+                                <h4 id="trainingVoices">0</h4>
+                                <p>Đang training</p>
+                            </div>
+                            <div class="voice-stat-item">
+                                <h4 id="failedVoices">0</h4>
+                                <p>Training thất bại</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>User</th>
+                                        <th>Tên Voice</th>
+                                        <th>Trạng thái</th>
+                                        <th>Public</th>
+                                        <th>Số lần dùng</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="voicesTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center">Đang tải...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Section -->
+                <div id="systemSection" class="admin-section" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="admin-card">
+                                <h5>Thông tin hệ thống</h5>
+                                <table class="table table-dark">
+                                    <tr>
+                                        <td>Server Status</td>
+                                        <td><span class="badge bg-success">Online</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Database</td>
+                                        <td><span id="dbStatus">Connected</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Edge TTS</td>
+                                        <td><span class="badge bg-success">Available</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Voice Cloning</td>
+                                        <td><span id="vcStatus">Active</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Storage Used</td>
+                                        <td><span id="storageUsed">0 GB</span> / 100 GB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>CPU Usage</td>
+                                        <td><span id="cpuUsage">0%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Memory</td>
+                                        <td><span id="memoryUsage">0 GB</span> / 16 GB</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="admin-card">
+                                <h5>Cấu hình</h5>
+                                <form id="configForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Max Audio Duration (seconds)</label>
+                                        <input type="number" class="form-control" id="maxAudioDuration" value="300">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Min Audio Duration (seconds)</label>
+                                        <input type="number" class="form-control" id="minAudioDuration" value="10">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Max File Size (MB)</label>
+                                        <input type="number" class="form-control" id="maxFileSize" value="100">
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="maintenanceMode">
+                                            <label class="form-check-label" for="maintenanceMode">
+                                                Maintenance Mode
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Lưu cấu hình</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card mt-4">
+                        <h5>Công cụ</h5>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="clearCache()">
+                                <i class="fas fa-broom"></i> Clear Cache
+                            </button>
+                            <button class="btn btn-info" onclick="backupDatabase()">
+                                <i class="fas fa-download"></i> Backup Database
+                            </button>
+                            <button class="btn btn-danger" onclick="cleanupOldFiles()">
+                                <i class="fas fa-trash"></i> Cleanup Old Files
+                            </button>
+                            <button class="btn btn-success" onclick="testTTS()">
+                                <i class="fas fa-vial"></i> Test TTS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Section -->
+                <div id="logsSection" class="admin-section" style="display: none;">
+                    <div class="admin-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>System Logs</h4>
+                            <div>
+                                <select class="form-select" id="logFilter" style="width: 200px; display: inline-block;">
+                                    <option value="all">Tất cả</option>
+                                    <option value="error">Errors</option>
+                                    <option value="warning">Warnings</option>
+                                    <option value="info">Info</option>
+                                </select>
+                                <button class="btn btn-sm btn-secondary" onclick="downloadLogs()">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-log" id="systemLogs" style="font-family: monospace; font-size: 0.9rem;">
+                            <p class="text-muted">Đang tải logs...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Edit Modal -->
+    <div class="modal fade" id="userEditModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chỉnh sửa User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userEditForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" id="editUsername" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="editFullName">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" id="editRole">
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editIsActive">
+                                <label class="form-check-label" for="editIsActive">
+                                    Active
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUserEdit()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Global variables
+        let currentStats = null;
+        let weeklyChart = null;
+        let voiceTypeChart = null;
+        const API_BASE = '/api';
+
+        // Check admin authentication
+        function checkAdminAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token || user.role !== 'admin') {
+                window.location.href = '/';
+                return;
+            }
+
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
+            // Set current date
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('vi-VN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            loadAdminData();
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-link[data-section]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const section = this.getAttribute('data-section');
+                showSection(section);
+
+                // Update active state
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
+
+            // Show selected section
+            const sectionElement = document.getElementById(section + 'Section');
+            if (sectionElement) {
+                sectionElement.style.display = 'block';
+
+                // Load section-specific data
+                switch(section) {
+                    case 'overview':
+                        loadOverview();
+                        break;
+                    case 'users':
+                        loadUsers();
+                        break;
+                    case 'voices':
+                        loadVoices();
+                        break;
+                    case 'system':
+                        loadSystemInfo();
+                        break;
+                    case 'logs':
+                        loadLogs();
+                        break;
+                }
+            }
+        }
+
+        // Load admin data
+        async function loadAdminData() {
+            try {
+                const response = await axios.get(`${API_BASE}/admin/stats`);
+                currentStats = response.data;
+                updateStats();
+                loadOverview();
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                if (error.response?.status === 403) {
+                    alert('Không có quyền admin!');
+                    window.location.href = '/dashboard';
+                }
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            if (!currentStats) return;
+
+            document.getElementById('totalUsers').textContent = currentStats.total_users || 0;
+            document.getElementById('totalVoices').textContent = currentStats.total_voice_profiles || 0;
+            document.getElementById('trainedVoices').textContent = currentStats.trained_profiles || 0;
+            document.getElementById('totalRequests').textContent = currentStats.total_tts_requests || 0;
+            document.getElementById('todayRequests').textContent = currentStats.today_requests || 0;
+            document.getElementById('activeUsers').textContent = currentStats.active_users || 0;
+            
+            const activePercent = currentStats.total_users > 0 
+                ? Math.round((currentStats.active_users / currentStats.total_users) * 100) 
+                : 0;
+            document.getElementById('activePercent').textContent = activePercent;
+        }
+
+        // Load overview
+        function loadOverview() {
+            updateStats();
+            loadCharts();
+            loadRecentActivity();
+        }
+
+        // Load charts
+        function loadCharts() {
+            // Weekly chart
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            if (weeklyChart) weeklyChart.destroy();
+            
+            weeklyChart = new Chart(weeklyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    datasets: [{
+                        label: 'TTS Requests',
+                        data: [65, 59, 80, 81, 56, 55, 40], // Mock data
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'New Users',
+                        data: [5, 10, 5, 2, 20, 30, 45], // Mock data
+                        borderColor: '#FF9800',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#e0e0e0'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e0e0e0'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Voice type chart
+            const voiceTypeCtx = document.getElementById('voiceTypeChart').getContext('2d');
+            if (voiceTypeChart) voiceTypeChart.destroy();
+            
+            voiceTypeChart = new Chart(voiceTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Edge TTS', 'Cloned Voices', 'Google TTS'],
+                    datasets: [{
+                        data: [300, 50, 100], // Mock data
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#FF9800',
+                            '#2196F3'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                // Mock activity data
+                const activities = [
+                    { type: 'user_register', user: 'nguyenvana', time: new Date() },
+                    { type: 'voice_clone', user: 'tranthib', voice: 'Giọng nữ miền Nam', time: new Date(Date.now() - 3600000) },
+                    { type: 'tts_request', user: 'levanc', count: 5, time: new Date(Date.now() - 7200000) }
+                ];
+
+                const activityHtml = activities.map(activity => {
+                    let icon, text, color;
+                    
+                    switch(activity.type) {
+                        case 'user_register':
+                            icon = 'fa-user-plus';
+                            text = `User mới: <strong>${activity.user}</strong>`;
+                            color = '#4CAF50';
+                            break;
+                        case 'voice_clone':
+                            icon = 'fa-microphone';
+                            text = `<strong>${activity.user}</strong> clone voice: ${activity.voice}`;
+                            color = '#FF9800';
+                            break;
+                        case 'tts_request':
+                            icon = 'fa-volume-up';
+                            text = `<strong>${activity.user}</strong> tạo ${activity.count} audio`;
+                            color = '#2196F3';
+                            break;
+                    }
+
+                    return `
+                        <div class="activity-item" style="border-left-color: ${color}">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <i class="fas ${icon}" style="color: ${color}"></i>
+                                    ${text}
+                                </div>
+                                <small class="text-muted">${formatTime(activity.time)}</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('activityLog').innerHTML = activityHtml;
+            } catch (error) {
+                console.error('Error loading activity:', error);
+            }
+        }
+
+        // Load users
+        async function loadUsers(page = 1) {
+            try {
+                const response = await axios.get(`${API_BASE}/admin/users?page=${page}`);
+                const { users, total, pages, current_page } = response.data;
+
+                const tableBody = document.getElementById('usersTableBody');
+                tableBody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${user.full_name || '-'}</td>
+                        <td><span class="user-badge badge-${user.role}">${user.role}</span></td>
+                        <td><span class="user-badge badge-${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
+                        <td>${user.voice_profiles_count}</td>
+                        <td>${formatDate(user.created_at)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editUser(${user.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="toggleUserStatus(${user.id}, ${user.is_active})">
+                                <i class="fas fa-${user.is_active ? 'ban' : 'check'}"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Update pagination
+                updatePagination('usersPagination', current_page, pages, (p) => loadUsers(p));
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Edit user
+        async function editUser(userId) {
+            try {
+                const response = await axios.get(`${API_BASE}/admin/users/${userId}`);
+                const user = response.data.user;
+
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editFullName').value = user.full_name || '';
+                document.getElementById('editRole').value = user.role;
+                document.getElementById('editIsActive').checked = user.is_active;
+
+                const modal = new bootstrap.Modal(document.getElementById('userEditModal'));
+                modal.show();
+            } catch (error) {
+                alert('Lỗi khi tải thông tin user!');
+            }
+        }
+
+        // Save user edit
+        async function saveUserEdit() {
+            const userId = document.getElementById('editUserId').value;
+            const data = {
+                email: document.getElementById('editEmail').value,
+                full_name: document.getElementById('editFullName').value,
+                role: document.getElementById('editRole').value,
+                is_active: document.getElementById('editIsActive').checked
+            };
+
+            try {
+                await axios.put(`${API_BASE}/admin/users/${userId}`, data);
+                alert('Cập nhật thành công!');
+                bootstrap.Modal.getInstance(document.getElementById('userEditModal')).hide();
+                loadUsers();
+            } catch (error) {
+                alert('Lỗi khi cập nhật!');
+            }
+        }
+
+        // Toggle user status
+        async function toggleUserStatus(userId, currentStatus) {
+            if (!confirm(`Bạn có chắc muốn ${currentStatus ? 'khóa' : 'mở khóa'} user này?`)) {
+                return;
+            }
+
+            try {
+                await axios.put(`${API_BASE}/admin/users/${userId}`, {
+                    is_active: !currentStatus
+                });
+                loadUsers();
+            } catch (error) {
+                alert('Lỗi khi thay đổi trạng thái!');
+            }
+        }
+
+        // Load voices
+        async function loadVoices() {
+            try {
+                // Mock data for now
+                const voices = [
+                    {
+                        id: 1,
+                        user: 'nguyenvana',
+                        profile_name: 'Giọng Nam Bắc',
+                        is_trained: true,
+                        is_public: false,
+                        usage_count: 15,
+                        created_at: new Date()
+                    }
+                ];
+
+                const tableBody = document.getElementById('voicesTableBody');
+                tableBody.innerHTML = voices.map(voice => `
+                    <tr>
+                        <td>${voice.id}</td>
+                        <td>${voice.user}</td>
+                        <td>${voice.profile_name}</td>
+                        <td>
+                            <span class="badge bg-${voice.is_trained ? 'success' : 'warning'}">
+                                ${voice.is_trained ? 'Trained' : 'Training'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-${voice.is_public ? 'info' : 'secondary'}">
+                                ${voice.is_public ? 'Public' : 'Private'}
+                            </span>
+                        </td>
+                        <td>${voice.usage_count}</td>
+                        <td>${formatDate(voice.created_at)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewVoiceDetails(${voice.id})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteVoice(${voice.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading voices:', error);
+            }
+        }
+
+        // System functions
+        function loadSystemInfo() {
+            // Mock system info
+            document.getElementById('storageUsed').textContent = '15.3 GB';
+            document.getElementById('cpuUsage').textContent = '23%';
+            document.getElementById('memoryUsage').textContent = '4.2 GB';
+        }
+
+        function clearCache() {
+            if (confirm('Xóa cache hệ thống?')) {
+                alert('Cache đã được xóa!');
+            }
+        }
+
+        function backupDatabase() {
+            alert('Đang tạo backup database...');
+        }
+
+        function cleanupOldFiles() {
+            if (confirm('Xóa các file cũ hơn 30 ngày?')) {
+                alert('Đã xóa files cũ!');
+            }
+        }
+
+        function testTTS() {
+            alert('TTS test: OK');
+        }
+
+        // Load logs
+        function loadLogs() {
+            // Mock logs
+            const logs = [
+                '[2024-03-20 10:15:23] INFO: User nguyenvana logged in',
+                '[2024-03-20 10:14:15] WARNING: High CPU usage detected',
+                '[2024-03-20 10:13:45] ERROR: Failed to train voice profile #123',
+                '[2024-03-20 10:12:30] INFO: TTS request completed for user tranthib'
+            ];
+
+            document.getElementById('systemLogs').innerHTML = logs.map(log => {
+                let color = '#e0e0e0';
+                if (log.includes('ERROR')) color = '#f44336';
+                else if (log.includes('WARNING')) color = '#FF9800';
+                else if (log.includes('INFO')) color = '#4CAF50';
+
+                return `<div style="color: ${color}">${log}</div>`;
+            }).join('');
+        }
+
+        // Utility functions
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('vi-VN');
+        }
+
+        function formatTime(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            
+            if (minutes < 1) return 'Vừa xong';
+            if (minutes < 60) return `${minutes} phút trước`;
+            if (minutes < 1440) return `${Math.floor(minutes / 60)} giờ trước`;
+            return `${Math.floor(minutes / 1440)} ngày trước`;
+        }
+
+        function updatePagination(elementId, currentPage, totalPages, callback) {
+            const pagination = document.getElementById(elementId);
+            let html = '';
+
+            // Previous
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="${currentPage > 1 ? `${callback.name}(${currentPage - 1})` : ''}">Previous</a>
+            </li>`;
+
+            // Pages
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="${callback.name}(${i})">${i}</a>
+                </li>`;
+            }
+
+            // Next
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="${currentPage < totalPages ? `${callback.name}(${currentPage + 1})` : ''}">Next</a>
+            </li>`;
+
+            pagination.innerHTML = html;
+        }
+
+        function refreshData() {
+            loadAdminData();
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // Initialize
+        checkAdminAuth();
+
+        // Auto refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>
