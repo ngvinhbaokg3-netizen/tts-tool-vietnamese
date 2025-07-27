@@ -35,10 +35,6 @@ markdown
 
 Visit: [https://tts-vietnamese.com](https://tts-vietnamese.com)
 
-Demo credentials:
-- Username: `demo`
-- Password: `demo123`
-
 ## 🛠️ Installation
 
 ### Quick Start with Docker
