@@ -4,12 +4,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.wav
+*.pt
 .Python
 venv/
 env/
 ENV/
 .venv
-
+packages/
+*.pyc
+*.pkl
 # Flask
 instance/
 .webassets-cache
