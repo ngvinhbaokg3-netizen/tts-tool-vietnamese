@@ -532,6 +532,45 @@ def create_voice_profile():
         'profile': profile.to_dict()
     }), 201
 
+@app.route('/api/voice-profiles/<int:profile_id>', methods=['GET'])
+@jwt_required
+def get_voice_profile(profile_id):
+    """Lấy thông tin một voice profile"""
+    profile = VoiceProfile.query.get_or_404(profile_id)
+
+    # Check ownership or public
+    if profile.user_id != request.current_user.id and not profile.is_public and request.current_user.role != 'admin':
+        return jsonify({'error': 'Không có quyền xem profile này'}), 403
+
+    return jsonify({'profile': profile.to_dict()}), 200
+
+@app.route('/api/voice-profiles/<int:profile_id>', methods=['PUT'])
+@jwt_required
+def update_voice_profile(profile_id):
+    """Cập nhật voice profile"""
+    profile = VoiceProfile.query.get_or_404(profile_id)
+
+    if profile.user_id != request.current_user.id and request.current_user.role != 'admin':
+        return jsonify({'error': 'Không có quyền sửa profile này'}), 403
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'Thiếu dữ liệu'}), 400
+
+    if 'profile_name' in data:
+        profile.profile_name = data['profile_name']
+
+    if 'description' in data:
+        profile.description = data['description']
+
+    if 'is_public' in data:
+        profile.is_public = bool(data['is_public'])
+
+    db.session.commit()
+
+    return jsonify({'message': 'Cập nhật thành công', 'profile': profile.to_dict()}), 200
+
 @app.route('/api/voice-profiles/<int:profile_id>', methods=['DELETE'])
 @jwt_required
 def delete_voice_profile(profile_id):

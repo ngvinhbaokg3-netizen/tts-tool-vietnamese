@@ -133,6 +133,20 @@ curl -X POST http://localhost:5000/api/tts/synthesize \
   -d '{"text":"Xin chào","voice_type":"cloned","voice_id":"1"}'
 ```
 
+### Voice Profiles
+
+```bash
+# Get your voice profiles
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:5000/api/voice-profiles
+
+# Update a voice profile
+curl -X PUT http://localhost:5000/api/voice-profiles/1 \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"profile_name":"My Voice","is_public":true}'
+```
+
 ## 🚀 Deployment
 
 ### VPS Deployment
